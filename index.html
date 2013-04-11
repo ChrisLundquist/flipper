@@ -1,0 +1,308 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Flipper by jnunemaker</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Flipper</h1>
+        <p>feature flipping for ANYTHING</p>
+
+        <p class="view"><a href="https://github.com/jnunemaker/flipper">View the Project on GitHub <small>jnunemaker/flipper</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/jnunemaker/flipper/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/jnunemaker/flipper/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/jnunemaker/flipper">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <p><img src="https://raw.github.com/jnunemaker/flipper-ui/master/lib/flipper/ui/public/images/logo.png" alt="flipper logo"></p>
+
+<pre>
+__
+                               _.-~  )
+                    _..--~~~~,'   ,-/     _
+                 .-'. . . .'   ,-','    ,' )
+               ,'. . . _   ,--~,-'__..-'  ,'
+             ,'. . .  (@)' ---~~~~      ,'
+            /. . . . '~~             ,-'
+           /. . . . .             ,-'
+          ; . . . .  - .        ,'
+         : . . . .       _     /
+        . . . . .          `-.:
+       . . . ./  - .          )
+      .  . . |  _____..---.._/ _____
+~---~~~~----~~~~             ~~
+</pre>
+
+<p>Feature flipping is the act of enabling or disabling features or parts of your application, ideally without re-deploying or changing anything in your code base.</p>
+
+<p>The goal of this gem is to make turning features on or off so easy that everyone does it. Whatever your data store, throughput, or experience, feature flipping should be easy and have minimal impact on your application.</p>
+
+<h2>Installation</h2>
+
+<p>Add this line to your application's Gemfile:</p>
+
+<pre><code>gem 'flipper'
+</code></pre>
+
+<p>And then execute:</p>
+
+<pre><code>$ bundle
+</code></pre>
+
+<p>Or install it yourself with:</p>
+
+<pre><code>$ gem install flipper
+</code></pre>
+
+<h2>Usage</h2>
+
+<p>The goal of the API for flipper was to have everything revolve around features and what ways they can be enabled. Start with top level and dig into a feature, then dig in further and enable that feature for a given type of access, as opposed to thinking about how the feature will be accessed first (ie: stats.enable vs activate_group(:stats, ...)).</p>
+
+<div class="highlight"><pre><span class="nb">require</span> <span class="s1">'flipper'</span>
+
+<span class="c1"># pick an adapter</span>
+<span class="nb">require</span> <span class="s1">'flipper/adapters/memory'</span>
+<span class="n">adapter</span> <span class="o">=</span> <span class="ss">Flipper</span><span class="p">:</span><span class="ss">:Adapters</span><span class="o">::</span><span class="no">Memory</span><span class="o">.</span><span class="n">new</span>
+
+<span class="c1"># get a handy dsl instance</span>
+<span class="n">flipper</span> <span class="o">=</span> <span class="no">Flipper</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">adapter</span><span class="p">)</span>
+
+<span class="c1"># grab a feature</span>
+<span class="n">search</span> <span class="o">=</span> <span class="n">flipper</span><span class="o">[</span><span class="ss">:search</span><span class="o">]</span>
+
+<span class="c1"># check if that feature is enabled</span>
+<span class="k">if</span> <span class="n">search</span><span class="o">.</span><span class="n">enabled?</span>
+  <span class="nb">puts</span> <span class="s1">'Search away!'</span>
+<span class="k">else</span>
+  <span class="nb">puts</span> <span class="s1">'No search for you!'</span>
+<span class="k">end</span>
+
+<span class="nb">puts</span> <span class="s1">'Enabling Search...'</span>
+<span class="n">search</span><span class="o">.</span><span class="n">enable</span>
+
+<span class="c1"># check if that feature is enabled again</span>
+<span class="k">if</span> <span class="n">search</span><span class="o">.</span><span class="n">enabled?</span>
+  <span class="nb">puts</span> <span class="s1">'Search away!'</span>
+<span class="k">else</span>
+  <span class="nb">puts</span> <span class="s1">'No search for you!'</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>Of course there are more <a href="https://github.com/jnunemaker/flipper/tree/master/examples">examples for you to peruse</a>.</p>
+
+<h2>Types</h2>
+
+<p>Out of the box several types of enabling are supported. They are checked in this order.</p>
+
+<h3>1. Boolean</h3>
+
+<p>All on or all off. Think top level things like :stats, :search, :logging, etc. Also, an easy way to release a new feature as once a feature is boolean enabled it is on for every situation.</p>
+
+<div class="highlight"><pre><span class="n">flipper</span> <span class="o">=</span> <span class="no">Flipper</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">adapter</span><span class="p">)</span>
+<span class="n">flipper</span><span class="o">[</span><span class="ss">:stats</span><span class="o">].</span><span class="n">enable</span> <span class="c1"># turn on</span>
+<span class="n">flipper</span><span class="o">[</span><span class="ss">:stats</span><span class="o">].</span><span class="n">disable</span> <span class="c1"># turn off</span>
+<span class="n">flipper</span><span class="o">[</span><span class="ss">:stats</span><span class="o">].</span><span class="n">enabled?</span> <span class="c1"># check</span>
+</pre></div>
+
+<h3>2. Group</h3>
+
+<p>Turn on feature based on value of block. Super flexible way to turn on a feature for multiple things (users, people, accounts, etc.)</p>
+
+<div class="highlight"><pre><span class="no">Flipper</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="ss">:admins</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">actor</span><span class="o">|</span>
+  <span class="n">actor</span><span class="o">.</span><span class="n">respond_to?</span><span class="p">(</span><span class="ss">:admin?</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">actor</span><span class="o">.</span><span class="n">admin?</span>
+<span class="k">end</span>
+
+<span class="n">flipper</span> <span class="o">=</span> <span class="no">Flipper</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">adapter</span><span class="p">)</span>
+<span class="n">flipper</span><span class="o">[</span><span class="ss">:stats</span><span class="o">].</span><span class="n">enable</span> <span class="n">flipper</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="ss">:admins</span><span class="p">)</span> <span class="c1"># turn on for admins</span>
+<span class="n">flipper</span><span class="o">[</span><span class="ss">:stats</span><span class="o">].</span><span class="n">disable</span> <span class="n">flipper</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="ss">:admins</span><span class="p">)</span> <span class="c1"># turn off for admins</span>
+<span class="n">person</span> <span class="o">=</span> <span class="no">Person</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">params</span><span class="o">[</span><span class="ss">:id</span><span class="o">]</span><span class="p">)</span>
+<span class="n">flipper</span><span class="o">[</span><span class="ss">:stats</span><span class="o">].</span><span class="n">enabled?</span> <span class="n">person</span> <span class="c1"># check if enabled, returns true if person.admin? is true</span>
+</pre></div>
+
+<p>There is no requirement that the thing yielded to the block be a user model or whatever. It can be anything you want therefore it is a good idea to check that the thing passed into the group block actually responds to what you are trying.</p>
+
+<h3>3. Individual Actor</h3>
+
+<p>Turn feature on for individual thing. Think enable feature for someone to test or for a buddy. The only requirement for an individual actor is that it must respond to <code>flipper_id</code>.</p>
+
+<div class="highlight"><pre><span class="n">flipper</span> <span class="o">=</span> <span class="no">Flipper</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">adapter</span><span class="p">)</span>
+
+<span class="n">flipper</span><span class="o">[</span><span class="ss">:stats</span><span class="o">].</span><span class="n">enable</span> <span class="n">user</span>
+<span class="n">flipper</span><span class="o">[</span><span class="ss">:stats</span><span class="o">].</span><span class="n">enabled?</span> <span class="n">user</span> <span class="c1"># true</span>
+
+<span class="n">flipper</span><span class="o">[</span><span class="ss">:stats</span><span class="o">].</span><span class="n">disable</span> <span class="n">user</span>
+<span class="n">flipper</span><span class="o">[</span><span class="ss">:stats</span><span class="o">].</span><span class="n">enabled?</span> <span class="n">user</span> <span class="c1"># false</span>
+
+<span class="c1"># you can enable anything, does not need to be user or person</span>
+<span class="n">flipper</span><span class="o">[</span><span class="ss">:search</span><span class="o">].</span><span class="n">enable</span> <span class="n">group</span>
+<span class="n">flipper</span><span class="o">[</span><span class="ss">:search</span><span class="o">].</span><span class="n">enabled?</span> <span class="n">group</span>
+</pre></div>
+
+<p>The key is to make sure you do not enable two different types of objects for the same feature. Imagine that user has a flipper_id of 6 and group has a flipper_id of 6. Enabling search for user would automatically enable it for group, as they both have a flipper_id of 6.</p>
+
+<p>The one exception to this rule is if you have globally unique flipper_ids, such as uuid's. If your flipper_ids are unique globally in your entire system, enabling two different types should be safe. Another way around this is to prefix the flipper_id with the class name like this:</p>
+
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">User</span>
+  <span class="k">def</span> <span class="nf">flipper_id</span>
+    <span class="s2">"User:</span><span class="si">#{</span><span class="nb">id</span><span class="si">}</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Group</span>
+  <span class="k">def</span> <span class="nf">flipper_id</span>
+    <span class="s2">"Group:</span><span class="si">#{</span><span class="nb">id</span><span class="si">}</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre></div>
+
+<h3>4. Percentage of Actors</h3>
+
+<p>Turn this on for a percentage of actors (think user, member, account, group, whatever). Consistently on or off for this user as long as percentage increases. Think slow rollout of a new feature to a percentage of things.</p>
+
+<div class="highlight"><pre><span class="n">flipper</span> <span class="o">=</span> <span class="no">Flipper</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">adapter</span><span class="p">)</span>
+
+<span class="c1"># returns a percentage of actors instance set to 10</span>
+<span class="n">percentage</span> <span class="o">=</span> <span class="n">flipper</span><span class="o">.</span><span class="n">actors</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="c1"># turn stats on for 10 percent of users in the system</span>
+<span class="n">flipper</span><span class="o">[</span><span class="ss">:stats</span><span class="o">].</span><span class="n">enable</span> <span class="n">percentage</span>
+
+<span class="c1"># checks if actor's flipper_id is in the enabled percentage by hashing</span>
+<span class="c1"># user.flipper_id.to_s to ensure enabled distribution is smooth</span>
+<span class="n">flipper</span><span class="o">[</span><span class="ss">:stats</span><span class="o">].</span><span class="n">enabled?</span> <span class="n">user</span>
+
+</pre></div>
+
+<h3>5. Percentage of Random</h3>
+
+<p>Turn this on for a random percentage of time. Think load testing new features behind the scenes and such.</p>
+
+<div class="highlight"><pre><span class="n">flipper</span> <span class="o">=</span> <span class="no">Flipper</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">adapter</span><span class="p">)</span>
+
+<span class="c1"># get percentage of random instance set to 5</span>
+<span class="n">percentage</span> <span class="o">=</span> <span class="n">flipper</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="c1"># turn on logging for 5 percent of the time randomly</span>
+<span class="c1"># could be on during one request and off the next</span>
+<span class="c1"># could even be on first time in request and off second time</span>
+<span class="n">flipper</span><span class="o">[</span><span class="ss">:logging</span><span class="o">].</span><span class="n">enable</span> <span class="n">percentage</span>
+</pre></div>
+
+<p>Randomness is not a good idea for enabling new features in the UI. Most of the time you want a feature on or off for a user, but there are definitely times when I have found percentage of random to be very useful.</p>
+
+<h2>Adapters</h2>
+
+<p>I plan on supporting <a href="https://github.com/jnunemaker/flipper/blob/master/lib/flipper/adapters/memory.rb">in-memory</a>, <a href="https://github.com/jnunemaker/flipper-mongo">Mongo</a>, and <a href="https://github.com/jnunemaker/flipper-redis">Redis</a> as adapters for flipper. Others are welcome, so please let me know if you create one.</p>
+
+<ul>
+<li>
+<a href="https://github.com/jnunemaker/flipper/blob/master/lib/flipper/adapters/memory.rb">memory adapter</a> - Great for tests.</li>
+<li><a href="https://github.com/jnunemaker/flipper-mongo">mongo adapter</a></li>
+<li><a href="https://github.com/jnunemaker/flipper-redis">redis adapter</a></li>
+<li><a href="https://github.com/jnunemaker/flipper-cassanity">cassanity adapter</a></li>
+</ul><p>The basic API for an adapter is this:</p>
+
+<ul>
+<li>
+<code>features</code> - Get the set of known features.</li>
+<li>
+<code>add(feature)</code> - Add a feature to the set of known features.</li>
+<li>
+<code>remove(feature)</code> - Remove a feature from the set of known features.</li>
+<li>
+<code>clear(feature)</code> - Clear all gate values for a feature.</li>
+<li>
+<code>get(feature)</code> - Get all gate values for a feature.</li>
+<li>
+<code>enable(feature, gate, thing)</code> - Enable a gate for a thing.</li>
+<li>
+<code>disable(feature, gate, thing)</code> - Disable a gate for a thing.</li>
+</ul><p>If you would like to make your own adapter, there are shared adapter specs that you can use to verify that you have everything working correctly.</p>
+
+<p>For example, here is what the in-memory adapter spec looks like:</p>
+
+<div class="highlight"><pre><span class="nb">require</span> <span class="s1">'helper'</span>
+<span class="nb">require</span> <span class="s1">'flipper/adapters/memory'</span>
+
+<span class="c1"># The shared specs are included with the flipper gem so you can use them in</span>
+<span class="c1"># separate adapter specific gems.</span>
+<span class="nb">require</span> <span class="s1">'flipper/spec/shared_adapter_specs'</span>
+
+<span class="n">describe</span> <span class="ss">Flipper</span><span class="p">:</span><span class="ss">:Adapters</span><span class="o">::</span><span class="no">Memory</span> <span class="k">do</span>
+
+  <span class="c1"># an instance of the new adapter you are trying to create</span>
+  <span class="n">subject</span> <span class="p">{</span> <span class="n">described_class</span><span class="o">.</span><span class="n">new</span> <span class="p">}</span>
+
+  <span class="c1"># include the shared specs that the subject must pass</span>
+  <span class="n">it_should_behave_like</span> <span class="s1">'a flipper adapter'</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>A good place to start when creating your own adapter is to copy one of the adapters mentioned above and replace the client specific code with whatever client you are attempting to adapt.</p>
+
+<p>I would also recommend setting <code>fail_fast = true</code> in your RSpec configuration as that will just give you one failure at a time to work through. It is also handy to have the shared adapter spec file open.</p>
+
+<h2>Optimization</h2>
+
+<p>One optimization that flipper provides is a memoizing middleware. The memoizing middleware ensures that you only make one adapter call per feature per request.</p>
+
+<p>This means if you check the same feature over and over, it will only make one mongo, redis, or whatever call per feature for the length of the request.</p>
+
+<p>You can use the middleware from a Rails initializer like so:</p>
+
+<div class="highlight"><pre><span class="c1"># create flipper dsl instance, see above Usage for more details</span>
+<span class="n">flipper</span> <span class="o">=</span> <span class="no">Flipper</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="o">.</span><span class="n">.</span><span class="o">.</span><span class="p">)</span>
+
+<span class="nb">require</span> <span class="s1">'flipper/middleware/memoizer'</span>
+<span class="n">config</span><span class="o">.</span><span class="n">middleware</span><span class="o">.</span><span class="n">use</span> <span class="ss">Flipper</span><span class="p">:</span><span class="ss">:Middleware</span><span class="o">::</span><span class="no">Memoizer</span><span class="p">,</span> <span class="n">flipper</span>
+</pre></div>
+
+<p>If you set your flipper instance up in an initializer, you can pass a block to the middleware and it will lazily load the instance the first time the middleware is invoked.</p>
+
+<div class="highlight"><pre><span class="c1"># config/initializers/flipper.rb</span>
+<span class="vg">$flipper</span> <span class="o">=</span> <span class="no">Flipper</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="o">.</span><span class="n">.</span><span class="o">.</span><span class="p">)</span>
+
+<span class="c1"># config/application.rb</span>
+<span class="n">config</span><span class="o">.</span><span class="n">middleware</span><span class="o">.</span><span class="n">use</span> <span class="ss">Flipper</span><span class="p">:</span><span class="ss">:Middleware</span><span class="o">::</span><span class="no">Memoizer</span><span class="p">,</span> <span class="nb">lambda</span> <span class="p">{</span> <span class="vg">$flipper</span> <span class="p">}</span>
+</pre></div>
+
+<p><strong>Note</strong>: Be sure that the middlware is high enough up in your stack that all feature checks are wrapped.</p>
+
+<h2>Contributing</h2>
+
+<ol>
+<li>Fork it</li>
+<li>Create your feature branch (<code>git checkout -b my-new-feature</code>)</li>
+<li>Commit your changes (<code>git commit -am 'Added some feature'</code>)</li>
+<li>Push to the branch (<code>git push origin my-new-feature</code>)</li>
+<li>Create new Pull Request</li>
+</ol><h2>Coming Soon™</h2>
+
+<ul>
+<li>
+<a href="https://github.com/jnunemaker/flipper-ui">Web UI</a> (think resque UI for features toggling/status)</li>
+</ul>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/jnunemaker">jnunemaker</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
